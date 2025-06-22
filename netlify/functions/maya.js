@@ -1,40 +1,59 @@
-const fetch = require("node-fetch");
+const fetch = require('node-fetch');
 
-exports.handler = async (event) => {
+exports.handler = async function (event) {
   const body = JSON.parse(event.body);
-  const userMessage = body.message;
+  const userInput = body.message;
+
+  const claudePrompt = `
+You are MAYA, a warm, trauma-informed postpartum wellness assistant.
+Use compassion, clarity, and evidence-based care to support the user.
+
+Here’s what she asked:
+"${userInput}"
+
+Respond with:
+- Emotional validation
+- Practical wellness tools
+- Short paragraphs (not a list)
+- Friendly, non-clinical tone
+- A gentle suggestion or resource
+
+If unsure, ask a thoughtful question to continue the conversation.
+  `;
 
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
       headers: {
-        "x-api-key": process.env.CLAUDE_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: "claude-3-opus-20240229",
-        max_tokens: 500,
+        model: 'claude-3-sonnet-20240229',
+        max_tokens: 400,
+        temperature: 0.7,
         messages: [
-          { role: "user", content: userMessage },
           {
-            role: "system",
-            content: "You are MAYA, a warm, trauma-informed postpartum wellness assistant. Respond with compassion, clarity, and clinically grounded care."
+            role: 'user',
+            content: claudePrompt
           }
         ]
       })
     });
 
-    const result = await response.json();
+    const data = await response.json();
+    const reply = data.content?.[0]?.text || "I'm not sure how to respond just yet, but I'm here with you.";
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ reply: result?.content?.[0]?.text || "I'm here for you." })
+      body: JSON.stringify({ reply })
     };
-  } catch (err) {
+  } catch (error) {
+    console.error("Claude API Error:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ reply: "Error contacting MAYA. Please try again later." })
+      body: JSON.stringify({ error: 'Something went wrong talking to MAYA.' })
     };
   }
 };
