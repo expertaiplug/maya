@@ -1,0 +1,10 @@
+{
+  "name": "maya-ai-functions",
+  "version": "1.0.0",
+  "description": "Netlify function for MAYA Claude API",
+  "main": "maya.js",
+  "type": "commonjs",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.9.1"
+  }
+}
