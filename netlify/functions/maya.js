@@ -1,12 +1,14 @@
-const Anthropic = require('@anthropic-ai/sdk');
+// Try alternative import syntax
+let Anthropic;
+try {
+  Anthropic = require('@anthropic-ai/sdk');
+} catch (error) {
+  console.log('Failed to import Anthropic SDK:', error.message);
+}
 
 exports.handler = async (event, context) => {
   console.log('Function started');
-  console.log('Environment variables check:', {
-    hasApiKey: !!process.env.CLAUDE_API_KEY,
-    apiKeyLength: process.env.CLAUDE_API_KEY?.length || 0,
-    apiKeyPrefix: process.env.CLAUDE_API_KEY?.substring(0, 10) || 'missing'
-  });
+  console.log('Anthropic SDK available:', !!Anthropic);
 
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -27,6 +29,11 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    // Check if SDK loaded
+    if (!Anthropic) {
+      throw new Error('Anthropic SDK not available');
+    }
+
     console.log('Creating Anthropic client...');
     const anthropic = new Anthropic({
       apiKey: process.env.CLAUDE_API_KEY,
@@ -45,11 +52,11 @@ exports.handler = async (event, context) => {
 
     console.log('Message received:', message.substring(0, 50) + '...');
 
-    const mayaPrompt = `You are MAYA, a warm postpartum assistant who understands the 3 AM struggles and identity shifts of new motherhood.
+    const mayaPrompt = `You are MAYA, a warm postpartum assistant who understands the 3 AM struggles and identity shifts of new motherhood. You are clinically informed but radically compassionate.
 
 The user said: "${message}"
 
-Respond with warmth and understanding in 2-3 paragraphs.`;
+Respond with warmth and understanding in 2-3 paragraphs. If they mention crisis or self-harm, provide crisis resources: Postpartum Support International: 1-800-944-4773, Crisis Text: HOME to 741741, Suicide Prevention: 988.`;
 
     console.log('Calling Claude API...');
     const response = await anthropic.messages.create({
@@ -79,7 +86,7 @@ Respond with warmth and understanding in 2-3 paragraphs.`;
       statusCode: 500,
       headers,
       body: JSON.stringify({ 
-        error: `Debug info: ${error.message}` 
+        error: `MAYA is having technical difficulties. If you're in crisis, contact: 1-800-944-4773` 
       }),
     };
   }
