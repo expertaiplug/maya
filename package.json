@@ -2,9 +2,12 @@
   "name": "maya-ai-functions",
   "version": "1.0.0",
   "description": "Netlify function for MAYA Claude API",
-  "main": "maya.js",
+  "main": "netlify/functions/maya.js",
   "type": "commonjs",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.9.1"
+    "@anthropic-ai/sdk": "^0.27.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
